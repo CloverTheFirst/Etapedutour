@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Etape du Tour</title>
+</head>
+<body>
+    <h1>Recherche de personnes</h1>
+    <input type="text" id="searchInput" placeholder="Entrez le nom de la personne">
+    <button id="searchButton">Rechercher</button>
+    <div id="resultContainer"></div>
+    <!-- Ajoutez ces scripts juste avant la balise </body> -->
+
+<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+<script>
+    document.getElementById('searchButton').addEventListener('click', function () {
+        var searchTerm = document.getElementById('searchInput').value;
+
+        // Lire le fichier Excel
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'chemin/vers/votre/fichier/excel.xlsx', true);
+        xhr.responseType = 'arraybuffer';
+
+        xhr.onload = function (e) {
+            var arraybuffer = xhr.response;
+            var data = new Uint8Array(arraybuffer);
+            var workbook = XLSX.read(data, { type: 'array' });
+            var sheet = workbook.Sheets['Sheet1'];
+
+            var jsonData = XLSX.utils.sheet_to_json(sheet);
+            var foundPerson = jsonData.find(function (person) {
+                return person['Nom'] === searchTerm; // 'Nom' correspond à la colonne E dans le fichier Excel
+            });
+
+            var resultContainer = document.getElementById('resultContainer');
+            resultContainer.innerHTML = '';
+
+            if (foundPerson) {
+                var personInfo = document.createElement('p');
+                personInfo.textContent = 'Nom: ' + foundPerson['Nom'] + ', Informations supplémentaires: ' + foundPerson['Informations'];
+                resultContainer.appendChild(personInfo);
+            } else {
+                var errorMessage = document.createElement('p');
+                errorMessage.textContent = 'Personne introuvable.';
+                resultContainer.appendChild(errorMessage);
+            }
+        };
+
+        xhr.send();
+    });
+</script>
+</body>
+</html>
